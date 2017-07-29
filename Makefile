@@ -1,3 +1,3 @@
 
-all: main.c
-	gcc main.c -o date-persist
+all: date-persist.c
+	gcc date-persist.c -o date-persist
