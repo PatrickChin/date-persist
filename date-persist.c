@@ -10,8 +10,10 @@ int main(int argc, char *argv[])
     char buf[100];
     char * format = argc == 2 ? argv[1] : "%c\n";
 
+    // TODO `format` needs to have enough space to store the extra character
     size_t flen = strlen(format);
-    if (format[flen-1] != '\n')
+    if (format[flen-1] != '\n' &&
+	    (format[flen-2] != '%' || format[flen-1] != 'n'))
 	strncat(format, "\n", 1);
 
     for (;;)
