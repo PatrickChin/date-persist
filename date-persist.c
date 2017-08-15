@@ -1,3 +1,5 @@
+// vim: ts=8
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
