@@ -7,8 +7,7 @@
 
 int main(int argc, char *argv[])
 {
-    time_t timer;
-    struct timespec tp;
+    struct timespec curtp, sleeptp = {0, 0};
     char buf[100];
     char * format = argc == 2 ? argv[1] : "%c\n";
 
@@ -18,16 +17,21 @@ int main(int argc, char *argv[])
 	    (format[flen-2] != '%' || format[flen-1] != 'n'))
 	strncat(format, "\n", 1);
 
+    clock_gettime(CLOCK_REALTIME, &curtp);
+
     for (;;)
     {
-	time(&timer);
-	timer++; // get the date string for the next second
-	size_t len = strftime(buf, sizeof buf, format, localtime(&timer));
+	long nextsec =  curtp.tv_sec + 1; // get the date string for the next second
+	struct tm * localtm = localtime(&nextsec);
+	size_t len = strftime(buf, sizeof buf, format, localtm);
 
-	clock_gettime(CLOCK_MONOTONIC, &tp);
-	tp.tv_sec = 0;
-	tp.tv_nsec = (1000000000-1) - tp.tv_nsec;
-	nanosleep(&tp, NULL);
+	// MONOTONIC_RAW and REALTIME seconds may not align
+	// REALTIME is affected by NTP
+	// TODO Find out what happens if realtime jumps backwards
+	clock_gettime(CLOCK_REALTIME, &curtp);
+	sleeptp.tv_nsec = (1000000000-1) - curtp.tv_nsec;
+	nanosleep(&sleeptp, NULL);
+	curtp.tv_sec += 1;
 
 	fwrite(buf, 1, len, stdout);
 	fflush(stdout);
