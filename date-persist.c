@@ -1,21 +1,24 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
-
-#define DATE_BUF_SIZE 100
+#include <string.h>
 
 int main(int argc, char *argv[])
 {
     time_t timer;
     struct timespec tp;
-    char * buf = malloc(DATE_BUF_SIZE);
-    const char * format = argc == 2 ? argv[1] : "%c\n";
+    char buf[100];
+    char * format = argc == 2 ? argv[1] : "%c\n";
+
+    size_t flen = strlen(format);
+    if (format[flen-1] != '\n')
+	strncat(format, "\n", 1);
 
     for (;;)
     {
 	time(&timer);
 	timer++; // get the date string for the next second
-	size_t len = strftime(buf, DATE_BUF_SIZE, format, localtime(&timer));
+	size_t len = strftime(buf, sizeof buf, format, localtime(&timer));
 
 	clock_gettime(CLOCK_MONOTONIC, &tp);
 	tp.tv_sec = 0;
