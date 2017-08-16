@@ -1,4 +1,4 @@
-// vim: ts=8
+// vim: ts=8:sw=4:noexpandtab
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -9,13 +9,21 @@ int main(int argc, char *argv[])
 {
     struct timespec curtp, sleeptp = {0, 0};
     char buf[100];
-    char * format = argc == 2 ? argv[1] : "%c\n";
+    char * format;
 
-    // TODO `format` needs to have enough space to store the extra character
-    size_t flen = strlen(format);
-    if (format[flen-1] != '\n' &&
-	    (format[flen-2] != '%' || format[flen-1] != 'n'))
-	strncat(format, "\n", 1);
+    if (argc != 2) {
+	format = "%c\n";
+    } else {
+	format = argv[1];
+	size_t flen = strlen(format);
+	if (format[flen-1] != '\n' &&
+		(format[flen-2] != '%' || format[flen-1] != 'n')) {
+	    format = malloc(flen+2);
+	    strncpy(format, argv[1], flen);
+	    format[flen] = '\n';
+	    format[flen+1] = '\0';
+	}
+    }
 
     clock_gettime(CLOCK_REALTIME, &curtp);
 
