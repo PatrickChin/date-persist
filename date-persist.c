@@ -2,12 +2,15 @@
 
 #include <stdio.h>
 #include <time.h>
+#include <string.h>
 
-#define BUF_SIZE 100
+#define BUF_SIZE 254
 
 int main(int argc, char *argv[])
 {
-    char * format = argc == 1 ? "%c\n" : argv[1];
+    const char * const format = argc == 1 ? "%c\n" : argv[1];
+    const size_t flen = strlen(format);
+    const int add_newline = format[flen-1] == '\n';
 
     struct timespec curtp;
     clock_gettime(CLOCK_REALTIME, &curtp);
@@ -16,21 +19,18 @@ int main(int argc, char *argv[])
     struct timespec sleeptp = {0, 0};
     while (1)
     {
-	long nextsec =  curtp.tv_sec + 1; // get the date string for the next second
-	struct tm * localtm = localtime(&nextsec);
-	size_t len = strftime(buf, sizeof buf, format, localtm);
+	const long nextsec =  curtp.tv_sec + 1; // get the date string for the next second
+	const struct tm * localtm = localtime(&nextsec);
+	const size_t len = strftime(buf, sizeof buf, format, localtm);
+
+	if (len == 0)
+	    return 1;
 
 	// append newline
-	{
-	    char * c = buf;
-	    while ((c-buf) < BUF_SIZE && *c != '\0')
-		c++;
-	    if (*(c-1) != '\n')
-	    {
-		*c = '\n';
-		*++c = '\0';
-		len++;
-	    }
+	if (add_newline) {
+	    const size_t end = len < BUF_SIZE-1 ? len : BUF_SIZE-1;
+	    buf[end-1] = '\n';
+	    buf[end] = '\0';
 	}
 
 	clock_gettime(CLOCK_REALTIME, &curtp);
